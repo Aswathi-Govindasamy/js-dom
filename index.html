@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Memory Card Game</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Flip CSS -->
+    <style>
+      .card {
+        perspective: 600px;
+      }
+
+      .card-inner {
+        position: relative;
+        width: 80px;
+        height: 80px;
+        transform-style: preserve-3d;
+        transition: transform 0.6s;
+      }
+
+      .card.flip .card-inner {
+        transform: rotateY(180deg);
+      }
+
+      .card-face {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        border-radius: 0.5rem;
+        color: white;
+        backface-visibility: hidden;
+      }
+
+      .card-front {
+        background-color: #819a91; /* lime-400 */
+        transform: rotateY(180deg);
+      }
+
+      .card-back {
+        background-color: #a7c1a8; /* violet-600 */
+      }
+
+      .card.matched .card-front {
+        background-color: #d1d8be !important; /* yellow-400 */
+      }
+    </style>
+  </head>
+  <body class="bg-[#E7CCCC] min-h-screen flex flex-col items-center p-6">
+    <!-- Header -->
+    <header class="mb-6 text-center">
+      <h1 class="text-3xl text-pink-500 font-bold mb-2 pb-10">
+        Memory Card Game
+      </h1>
+      <button
+        id="restartButton"
+        class="bg-rose-500 text-teal-400 font-bold px-4 py-2 rounded hover:bg-rose-600"
+      >
+        Restart
+      </button>
+    </header>
+
+    <!-- Game Board -->
+    <main>
+      <div id="gameBoard" class="grid gap-4 grid-cols-4">
+        <!-- Cards will be created by JavaScript -->
+      </div>
+    </main>
+
+    <script>
+      const symbols = ["🐕", "🐈", "🐇", "🐖", "🐍", "🐐", "🐄", "🐿️"];
+      const restartBtn = document.getElementById("restartButton");
+      const gameBoard = document.getElementById("gameBoard");
+      let flippedCards = [];
+      let matchCount = 0;
+      function shuffle(array) {
+        return array.sort(() => Math.random() - 0.5);
+      }
+
+      function startGame() {
+        gameBoard.innerHTML = "";
+        matchCount = 0;
+        flippedCards = [];
+        const shuffledCards = shuffle([...symbols, ...symbols]);
+
+        shuffledCards.forEach((symbol) => {
+          const card = document.createElement("div");
+          card.classList.add("card");
+          const cardInner = document.createElement("div");
+          cardInner.classList.add("card-inner");
+
+          const front = document.createElement("div");
+          front.classList.add("card-face", "card-front");
+          front.textContent = symbol;
+
+          const back = document.createElement("div");
+          back.classList.add("card-face", "card-back");
+          back.textContent = "?";
+
+          cardInner.appendChild(front);
+          cardInner.appendChild(back);
+          card.appendChild(cardInner);
+          gameBoard.appendChild(card);
+
+          card.addEventListener("click", () => flipCard(card, symbol));
+        });
+      }
+
+      function flipCard(card, symbol) {
+        if (flippedCards.length === 2 || card.classList.contains("flip"))
+          return;
+        card.classList.add("flip");
+        flippedCards.push({ card, symbol });
+        if (flippedCards.length === 2) {
+          checkMatch();
+        }
+      }
+      function checkMatch() {
+        const [first, second] = flippedCards;
+        if (first.symbol === second.symbol) {
+          first.card.classList.add("matched");
+          second.card.classList.add("matched");
+          matchCount += 2;
+          flippedCards = [];
+          if (matchCount === symbols.length * 2) {
+            alert("You Won");
+          }
+        } else {
+          setTimeout(() => {
+            first.card.classList.remove("flip");
+            second.card.classList.remove("flip");
+            flippedCards = [];
+          }, 1000);
+        }
+      }
+
+      restartBtn.addEventListener("click", startGame);
+      startGame();
+    </script>
+  </body>
+</html>
